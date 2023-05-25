@@ -14,10 +14,20 @@ namespace back_app.Controllers
             _context = context;
         }
         [HttpGet]
-         [Route("GetEmployee")]
+        [Route("GetEmployee")]
         public async Task<IActionResult> Get()
         {
             var result = await _context.Employees.ToListAsync();
+            return Ok(result);
+        }
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            var result = await _context.Employees.FindAsync(id);
+            if (result == null)
+            {
+                return NotFound();
+            }
             return Ok(result);
         }
         [HttpPost]
@@ -28,20 +38,32 @@ namespace back_app.Controllers
             await _context.SaveChangesAsync();
             return objEmployee;
         }
-        [HttpDelete("{id}")]
-    public async Task<IActionResult> DelEmployee(int id)
-    {
-        var entity = await _context.Employees.FindAsync(id);
-        if (entity == null)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateEmployee(int id, Employee objEmployee)
         {
-            return NotFound();
+            if (objEmployee.Id != id)
+            {
+                return NotFound();
+            }
+            _context.Entry(objEmployee).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            var updatedEmployee = _context.Employees.FindAsync(id);
+            return NoContent();
         }
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DelEmployee(int id)
+        {
+            var entity = await _context.Employees.FindAsync(id);
+            if (entity == null)
+            {
+                return NotFound();
+            }
 
-        _context.Employees.Remove(entity);
-        await _context.SaveChangesAsync();
+            _context.Employees.Remove(entity);
+            await _context.SaveChangesAsync();
 
-        return NoContent();
-    }
+            return NoContent();
+        }
 
     }
 }
